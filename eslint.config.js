@@ -1,12 +1,12 @@
-const {
+import {
     defineConfig,
     globalIgnores,
-} = require("eslint/config");
+} from "eslint/config";
 
-const tsParser = require("@typescript-eslint/parser");
-const typescriptEslint = require("@typescript-eslint/eslint-plugin");
-const globals = require("globals");
-const js = require("@eslint/js");
+import tsParser from "@typescript-eslint/parser";
+import typescriptEslint from "@typescript-eslint/eslint-plugin";
+import globals from "globals";
+import js from "@eslint/js";
 
 const {
     FlatCompat,
