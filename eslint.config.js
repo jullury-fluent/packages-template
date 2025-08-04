@@ -55,7 +55,7 @@ module.exports = defineConfig([{
         }],
     },
 
-    ignores: ["**/dist", "**/node_modules", "**/coverage"],
+    ignores: ["**/dist", "**/node_modules", "**/coverage",".releaserc.js"],
 }, globalIgnores(["**/dist", "**/node_modules", "**/coverage"]), globalIgnores([
     "**/dist",
     "**/node_modules",
