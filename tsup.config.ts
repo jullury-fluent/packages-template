@@ -1,14 +1,36 @@
-import { defineConfig } from 'tsup';
+import { defineConfig, type Options } from 'tsup';
 
-export default defineConfig([
-  {
+type WatchableOptions = Options & {
+  watch?: boolean;
+};
+
+export default defineConfig((options: WatchableOptions): Options[] => {
+  const isWatch = Boolean(options.watch);
+
+  const baseConfig: Options = {
     entry: {
       index: 'src/index.ts',
     },
     outDir: 'dist',
     format: ['esm', 'cjs'],
-    dts: true,
+    target: 'node18',
+    dts: {
+      entry: 'src/index.ts',
+      resolve: true,
+    },
+    sourcemap: true,
+    clean: !isWatch,
+    minify: false,
+    treeshake: 'recommended',
     splitting: false,
-    clean: true,
-  },
-]);
+    bundle: true,
+    skipNodeModulesBundle: true,
+    platform: 'node',
+    shims: false,
+    outExtension: (): Record<string, string> => ({
+      js: '.js',
+    }),
+  };
+
+  return [baseConfig];
+});

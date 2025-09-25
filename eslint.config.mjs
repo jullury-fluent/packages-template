@@ -10,57 +10,122 @@ import js from "@eslint/js";
 
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { FlatCompat } from "@eslint/eslintrc";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const compat = new FlatCompat({
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
-});
+const typescriptStrictTypeCheckedRules = typescriptEslint.configs["strict-type-checked"]?.rules ?? {};
+const typescriptStylisticTypeCheckedRules = typescriptEslint.configs["stylistic-type-checked"]?.rules ?? {};
 
-export default defineConfig([{
-    languageOptions: {
-        parser: tsParser,
-        ecmaVersion: 2022,
-        sourceType: "module",
+const baseTypeScriptLanguageOptions = {
+    parser: tsParser,
+    parserOptions: {
+        projectService: true,
+        tsconfigRootDir: __dirname,
+    },
+    ecmaVersion: "latest",
+    sourceType: "module",
+    globals: {
+        ...globals.node,
+    },
+};
 
-        parserOptions: {
-            project: "./tsconfig.json",
+export default defineConfig([
+    {
+        linterOptions: {
+            reportUnusedDisableDirectives: "error",
         },
-
-        globals: {
-            ...globals.node,
-            ...globals.jest,
+    },
+    globalIgnores([
+        "**/dist/**",
+        "**/node_modules/**",
+        "**/coverage/**",
+        "**/*.min.js",
+        "**/jest.config.js",
+        ".releaserc.js",
+    ]),
+    {
+        files: ["**/*.{js,jsx,mjs,cjs}"],
+        languageOptions: {
+            ecmaVersion: "latest",
+            sourceType: "module",
+            globals: {
+                ...globals.node,
+            },
+        },
+        rules: {
+            ...js.configs.recommended.rules,
+            "no-console": ["warn", { allow: ["warn", "error"] }],
         },
     },
-
-    extends: compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended"),
-
-    plugins: {
-        "@typescript-eslint": typescriptEslint,
+    {
+        files: ["**/*.{ts,tsx,cts,mts}"],
+        languageOptions: baseTypeScriptLanguageOptions,
+        plugins: {
+            "@typescript-eslint": typescriptEslint,
+        },
+        rules: {
+            ...typescriptStrictTypeCheckedRules,
+            ...typescriptStylisticTypeCheckedRules,
+            "@typescript-eslint/consistent-type-exports": "error",
+            "@typescript-eslint/consistent-type-imports": [
+                "error",
+                {
+                    prefer: "type-imports",
+                    fixStyle: "separate-type-imports",
+                },
+            ],
+            "@typescript-eslint/explicit-function-return-type": [
+                "error",
+                {
+                    allowExpressions: false,
+                    allowTypedFunctionExpressions: false,
+                },
+            ],
+            "@typescript-eslint/no-explicit-any": [
+                "error",
+                {
+                    fixToUnknown: true,
+                    ignoreRestArgs: false,
+                },
+            ],
+            "@typescript-eslint/no-floating-promises": [
+                "error",
+                {
+                    ignoreIIFE: false,
+                },
+            ],
+            "@typescript-eslint/no-unnecessary-type-assertion": "error",
+            "@typescript-eslint/no-unused-vars": [
+                "error",
+                {
+                    argsIgnorePattern: "^_",
+                    caughtErrorsIgnorePattern: "^_",
+                    varsIgnorePattern: "^_",
+                },
+            ],
+            "@typescript-eslint/prefer-readonly": "error",
+            "@typescript-eslint/switch-exhaustiveness-check": "error",
+        },
     },
-
-    rules: {
-        "@typescript-eslint/explicit-function-return-type": "off",
-        "@typescript-eslint/no-explicit-any": "error",
-
-        "@typescript-eslint/no-unused-vars": ["error", {
-            "argsIgnorePattern": "^_",
-            "caughtErrorsIgnorePattern": "^_",
-            "varsIgnorePattern": "^_",
-        }],
-
-        "no-console": ["warn", {
-            allow: ["warn", "error"],
-        }],
+    {
+        files: ["**/*.{test,spec}.{ts,tsx}"],
+        languageOptions: {
+            ...baseTypeScriptLanguageOptions,
+            globals: {
+                ...globals.node,
+                ...globals.jest,
+            },
+        },
     },
-
-    ignores: ["**/dist", "**/node_modules", "**/coverage",".releaserc.js"],
-}, globalIgnores(["**/dist", "**/node_modules", "**/coverage"]), globalIgnores([
-    "**/dist",
-    "**/node_modules",
-    "**/coverage",
-    "**/*.min.js",
-    "**/jest.config.js",
-])]);
+    {
+        files: ["**/*.{test,spec}.{js,jsx}"],
+        languageOptions: {
+            ecmaVersion: "latest",
+            sourceType: "module",
+            globals: {
+                ...globals.node,
+                ...globals.jest,
+            },
+        },
+    },
+]);
