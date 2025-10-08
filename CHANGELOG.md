@@ -5,6 +5,13 @@
 
 * implement structured logger with colored output and context support ([f92c7c0](https://github.com/jullury-fluent/packages-template/commit/f92c7c0be6f333c351563018bc2097f44572e0b6))
 
+# [1.1.0](https://github.com/jullury-fluent/packages-template/compare/v1.0.0...v1.1.0) (2025-10-08)
+
+
+### Features
+
+* implement structured logger with colored output and context support ([f92c7c0](https://github.com/jullury-fluent/packages-template/commit/f92c7c0be6f333c351563018bc2097f44572e0b6))
+
 # 1.0.0 (2025-08-04)
 
 
