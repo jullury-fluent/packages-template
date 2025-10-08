@@ -27,8 +27,8 @@ export default defineConfig((options: WatchableOptions): Options[] => {
     skipNodeModulesBundle: true,
     platform: 'node',
     shims: false,
-    outExtension: (): Record<string, string> => ({
-      js: '.js',
+    outExtension: ({ format }): Record<string, string> => ({
+      js: format === 'esm' ? '.mjs' : '.js',
     }),
   };
 
