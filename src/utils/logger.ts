@@ -1,5 +1,3 @@
-import chalk from 'chalk';
-
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
 
 export interface LogEntry {
@@ -27,6 +25,29 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   silent: 4,
 };
 
+// ANSI color codes
+const COLORS = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  dim: '\x1b[2m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  white: '\x1b[37m',
+  gray: '\x1b[90m',
+};
+
+const LEVEL_COLORS: Record<LogLevel, string> = {
+  debug: COLORS.gray,
+  info: COLORS.cyan,
+  warn: COLORS.yellow,
+  error: COLORS.red,
+  silent: COLORS.reset,
+};
+
 export class Logger {
   private readonly options: Required<Omit<LoggerOptions, 'formatter' | 'writer'>> & {
     formatter?: (entry: LogEntry) => string;
@@ -52,50 +73,44 @@ export class Logger {
       return this.options.formatter(entry);
     }
 
+    const levelColor = LEVEL_COLORS[entry.level];
+    const reset = COLORS.reset;
+    const dim = COLORS.dim;
+    const bright = COLORS.bright;
+
     const parts: string[] = [];
 
     if (this.options.timestamps) {
-      parts.push(chalk.gray(`[${entry.timestamp}]`));
+      const timestamp = `${dim}[${entry.timestamp}]${reset}`;
+      parts.push(timestamp);
     }
 
-    // Colorize log level based on severity
-    const levelStr = `[${entry.level.toUpperCase()}]`;
-    switch (entry.level) {
-      case 'debug':
-        parts.push(chalk.blue(levelStr));
-        break;
-      case 'info':
-        parts.push(chalk.green(levelStr));
-        break;
-      case 'warn':
-        parts.push(chalk.yellow(levelStr));
-        break;
-      case 'error':
-        parts.push(chalk.red(levelStr));
-        break;
-      case 'silent':
-        break;
-      default:
-        break;
-    }
+    const levelStr = `${levelColor}${bright}[${entry.level.toUpperCase()}]${reset}`;
+    parts.push(levelStr);
 
     if (entry.context) {
-      parts.push(chalk.cyan(`[${entry.context}]`));
+      const contextStr = `${COLORS.magenta}[${entry.context}]${reset}`;
+
+      parts.push(contextStr);
     }
 
-    parts.push(entry.message);
+    const messageStr = `${COLORS.white}${entry.message}${reset}`;
+    parts.push(messageStr);
 
     if (entry.metadata && Object.keys(entry.metadata).length > 0) {
       const metadataStr = this.options.prettyPrint
         ? JSON.stringify(entry.metadata, null, 2)
         : JSON.stringify(entry.metadata);
-      parts.push(chalk.magenta(metadataStr));
+      const coloredMetadata = `${COLORS.green}${metadataStr}${reset}`;
+      parts.push(coloredMetadata);
     }
 
     if (entry.error) {
-      parts.push(chalk.red(`\nError: ${entry.error.message}`));
+      const errorStr = `\n${COLORS.red}Error: ${entry.error.message}${reset}`;
+      parts.push(errorStr);
       if (entry.error.stack) {
-        parts.push(chalk.dim(`\nStack: ${entry.error.stack}`));
+        const stackStr = `\n${dim}Stack: ${entry.error.stack}${reset}`;
+        parts.push(stackStr);
       }
     }
 
